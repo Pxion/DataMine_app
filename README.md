@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Python 机器学习与数据挖掘 — 期末大作业报告
 
 **纯NumPy手写6大算法 · 5数据集横向对比 · Adam/高斯核改进 · 交互式Web平台**
@@ -528,31 +527,31 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 
 #### 5.1.1 主页
 
-![主页](D:\homework\计算机大数据分析与可视化\work_space\app\picture\主页.jpg)
+![主页](picture\主页.jpg)
 
 #### 5.1.2 数据集预览页
 
-![数据集预览页](D:\homework\计算机大数据分析与可视化\work_space\app\picture\数据集预览页.jpg)
+![数据集预览页](picture\数据集预览页.jpg)
 
 #### 5.1.3 单算法训练结果页
 
-![单算法评估结果页](D:\homework\计算机大数据分析与可视化\work_space\app\picture\单算法评估结果页.jpg)
+![单算法评估结果页](picture\单算法评估结果页.jpg)
 
 #### 5.1.4 多算法对比页
 
-![多算法对比页](D:\homework\计算机大数据分析与可视化\work_space\app\picture\多算法对比页.jpg)
+![多算法对比页](picture\多算法对比页.jpg)
 
 #### 5.1.5 基准结果页
 
-![基准效果](D:\homework\计算机大数据分析与可视化\work_space\app\picture\基准效果.jpg)
+![基准效果](picture\基准效果.jpg)
 
 #### 5.1.6 上传预测及结果页
 
-![上传数据](D:\homework\计算机大数据分析与可视化\work_space\app\picture\上传数据.jpg)
+![上传数据](picture\上传数据.jpg)
 
-![数据探索性分析](D:\homework\计算机大数据分析与可视化\work_space\app\picture\数据探索性分析.jpg)
+![数据探索性分析](picture\数据探索性分析.jpg)
 
-![算法预测](D:\homework\计算机大数据分析与可视化\work_space\app\picture\算法预测.jpg)
+![算法预测](picture\算法预测.jpg)
 
 ## 六、社会调查及实际应用反馈
 
@@ -864,8 +863,3 @@ work_space/app/
 - 总计：约 4000 行
 
 ---
-
-*本报告由潘祥瑜（学号：20234001088）完成，项目代码开源在本人GitHub仓库中。*
-=======
-
->>>>>>> cf5a5611aebd5233d4391ba58d34aed17d83c792
