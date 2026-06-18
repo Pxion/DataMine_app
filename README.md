@@ -527,31 +527,31 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 
 #### 5.1.1 主页
 
-![主页](picture\主页.jpg)
+![主页](picture/主页.jpg)
 
 #### 5.1.2 数据集预览页
 
-![数据集预览页](picture\数据集预览页.jpg)
+![数据集预览页](picture/数据集预览页.jpg)
 
 #### 5.1.3 单算法训练结果页
 
-![单算法评估结果页](picture\单算法评估结果页.jpg)
+![单算法评估结果页](picture/单算法评估结果页.jpg)
 
 #### 5.1.4 多算法对比页
 
-![多算法对比页](picture\多算法对比页.jpg)
+![多算法对比页](picture/多算法对比页.jpg)
 
 #### 5.1.5 基准结果页
 
-![基准效果](picture\基准效果.jpg)
+![基准效果](picture/基准效果.jpg)
 
 #### 5.1.6 上传预测及结果页
 
-![上传数据](picture\上传数据.jpg)
+![上传数据](picture/上传数据.jpg)
 
-![数据探索性分析](picture\数据探索性分析.jpg)
+![数据探索性分析](picture/数据探索性分析.jpg)
 
-![算法预测](picture\算法预测.jpg)
+![算法预测](picture/算法预测.jpg)
 
 ## 六、社会调查及实际应用反馈
 
