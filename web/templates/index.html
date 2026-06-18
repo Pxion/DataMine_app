@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据挖掘与机器学习平台</title>
+    <style>
+        :root {
+            --surface: #fafafa;
+            --surface-elevated: #ffffff;
+            --text-primary: #1a1a24;
+            --text-secondary: #5c5c6e;
+            --text-muted: #8e8e9e;
+            --accent: #0d9488;
+            --accent-hover: #0f766e;
+            --accent-subtle: #f0fdfa;
+            --accent-glow: rgba(13,148,136,0.12);
+            --warning: #d97706;
+            --error: #dc2626;
+            --border: #e5e5ec;
+            --border-hover: #c4c4d0;
+            --radius: 8px;
+            --radius-sm: 5px;
+            --shadow-sm: 0 1px 3px rgba(26,26,36,0.06), 0 1px 2px rgba(26,26,36,0.04);
+            --shadow-md: 0 4px 16px rgba(26,26,36,0.06), 0 2px 4px rgba(26,26,36,0.04);
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+            background: var(--surface); color: var(--text-primary); line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .nav {
+            position: sticky; top: 0; z-index: 10;
+            background: rgba(250,250,250,0.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border); height: 56px;
+            display: flex; align-items: center; padding: 0 32px;
+            justify-content: space-between;
+        }
+        .nav-brand { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+        .nav-brand span { color: var(--accent); }
+        .nav-status { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+        .nav-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+
+        .main { max-width: 1120px; margin: 0 auto; padding: 28px 24px 64px; }
+        .page-title { font-size: 22px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.01em; }
+        .page-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+
+        /* Tabs */
+        .tab-bar { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .tab-item {
+            padding: 10px 20px; font-size: 13px; font-weight: 500; cursor: pointer;
+            color: var(--text-secondary); border-bottom: 2px solid transparent;
+            transition: all 0.2s var(--ease); user-select: none;
+        }
+        .tab-item:hover { color: var(--accent); }
+        .tab-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Cards */
+        .card {
+            background: var(--surface-elevated); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 24px; margin-bottom: 16px;
+        }
+        .card-header { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: var(--text-primary); }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+        /* Dataset pills */
+        .dataset-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ds-pill {
+            padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer;
+            background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
+            transition: all 0.2s var(--ease); user-select: none;
+        }
+        .ds-pill:hover { border-color: var(--accent); color: var(--accent); }
+        .ds-pill.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        /* Dataset stats */
+        .ds-stats { font-size: 13px; color: var(--text-secondary); line-height: 1.8; }
+        .ds-stats strong { color: var(--text-primary); }
+        .stat-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 12px; }
+        .stat-table th, .stat-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+        .stat-table th { color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; }
+
+        /* Algorithm tags */
+        .algo-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .algo-tag {
+            padding: 9px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+            cursor: pointer; background: var(--surface); color: var(--text-secondary);
+            border: 1px solid var(--border); transition: all 0.2s var(--ease); user-select: none;
+        }
+        .algo-tag:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-subtle); }
+        .algo-tag.selected { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px var(--accent-glow); }
+
+        /* Param config */
+        .param-group { margin-bottom: 14px; }
+        .param-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; display: block; font-weight: 500; }
+        .param-input {
+            width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            font-size: 13px; font-family: inherit; background: var(--surface); color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+        .param-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .param-select {
+            width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            font-size: 13px; background: var(--surface); color: var(--text-primary); cursor: pointer;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 22px; border-radius: var(--radius-sm);
+            font-size: 13px; font-weight: 500; cursor: pointer;
+            border: 1px solid transparent; transition: all 0.2s var(--ease); font-family: inherit;
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-secondary { background: transparent; color: var(--text-secondary); border-color: var(--border); }
+        .btn-secondary:hover { border-color: var(--border-hover); color: var(--text-primary); }
+        .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+        /* Results */
+        .metric-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .metric-card {
+            flex: 1; min-width: 100px; text-align: center; padding: 16px 12px;
+            border-radius: var(--radius-sm); background: var(--surface); border: 1px solid var(--border);
+        }
+        .metric-value { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: -0.02em; }
+        .metric-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; }
+
+        .loading-spin {
+            display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border);
+            border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-img { max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .result-img:hover { transform: scale(1.01); box-shadow: 0 4px 16px rgba(13,148,136,0.12), 0 2px 6px rgba(26,26,36,0.08); }
+
+        .error-msg { color: var(--error); font-size: 13px; padding: 10px; background: #fef2f2; border-radius: var(--radius-sm); }
+        .empty-msg { color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px 0; }
+
+        .compare-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 8px; }
+        .compare-bar { height: 28px; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; color: #fff; font-weight: 500; min-width: 50px; transition: width 0.6s var(--ease); }
+        .compare-label { font-size: 12px; color: var(--text-secondary); width: 90px; text-align: right; flex-shrink: 0; }
+
+        .footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px; border-top: 1px solid var(--border); }
+
+        /* Upload styles */
+        .upload-zone {
+            border: 2px dashed var(--border-hover); border-radius: var(--radius);
+            padding: 40px 20px; text-align: center; cursor: pointer;
+            transition: all 0.2s var(--ease); background: var(--surface);
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent); background: var(--accent-subtle);
+        }
+        .upload-icon { font-size: 40px; margin-bottom: 8px; }
+        .upload-text { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; }
+        .upload-hint { font-size: 12px; color: var(--text-muted); }
+
+        .chart-type-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .ct-pill {
+            padding: 5px 12px; border-radius: var(--radius-sm); font-size: 11px; cursor: pointer;
+            background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
+            transition: all 0.15s var(--ease); user-select: none;
+        }
+        .ct-pill:hover { border-color: var(--accent); color: var(--accent); }
+        .ct-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .chart-display { min-height: 200px; }
+        .chart-display img { max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+        .chart-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .nav { padding: 0 16px; }
+            .main { padding: 16px 12px 32px; }
+            .card { padding: 16px; }
+            .metric-row { flex-direction: column; }
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .card { animation: fadeUp 0.4s var(--ease) both; }
+            .card:nth-child(1) { animation-delay: 0.05s; }
+            .card:nth-child(2) { animation-delay: 0.1s; }
+            .card:nth-child(3) { animation-delay: 0.15s; }
+            .card:nth-child(4) { animation-delay: 0.2s; }
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── Lightbox 图片缩放 ── */
+        .lightbox-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            cursor: zoom-out; opacity: 0; visibility: hidden;
+            transition: opacity 0.25s var(--ease), visibility 0.25s;
+        }
+        .lightbox-overlay.active { opacity: 1; visibility: visible; }
+        .lightbox-close {
+            position: fixed; top: 16px; right: 20px; z-index: 10001;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); border: none;
+            color: #fff; font-size: 22px; line-height: 40px;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .lightbox-close:hover { background: rgba(255,255,255,0.3); }
+        .lightbox-img-container {
+            max-width: 90vw; max-height: 90vh; overflow: hidden;
+            cursor: grab; user-select: none; position: relative;
+        }
+        .lightbox-img-container.dragging { cursor: grabbing; }
+        .lightbox-img-container img {
+            display: block; max-width: 90vw; max-height: 85vh;
+            object-fit: contain; transform-origin: 0 0;
+            transition: transform 0.1s ease;
+            pointer-events: none;
+        }
+        .lightbox-zoom-info {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.6); color: #fff; font-size: 12px;
+            padding: 6px 14px; border-radius: 20px; z-index: 10001;
+            pointer-events: none; transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-brand">Data<span>Mine</span></div>
+        <div class="nav-status"><span class="nav-dot"></span> 服务运行中</div>
+    </nav>
+
+    <div class="main">
+        <div class="page-title">数据挖掘与机器学习平台</div>
+        <div class="page-sub">纯NumPy手写6大算法 · 5数据集横向对比 · Adam/高斯核改进 · 全链路可视化平台</div>
+
+        <!-- Tab bar -->
+        <div class="tab-bar">
+            <div class="tab-item active" onclick="switchTab('train')">单算法训练</div>
+            <div class="tab-item" onclick="switchTab('compare')">多算法对比</div>
+            <div class="tab-item" onclick="switchTab('benchmark')">基准结果</div>
+            <div class="tab-item" onclick="switchTab('upload')">数据上传</div>
+        </div>
+
+        <!-- Tab 1: Train -->
+        <div class="tab-panel active" id="tab-train">
+            <div class="grid-2">
+                <!-- Left: Config -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">数据集</div>
+                        <div class="dataset-list" id="datasetList"></div>
+                        <div class="ds-stats" id="datasetStats" style="margin-top:12px;"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">算法</div>
+                        <div class="algo-grid" id="algoGrid"></div>
+                        <div id="algoParams" style="margin-top:14px;"></div>
+                    </div>
+                </div>
+                <!-- Right: Results -->
+                <div>
+                    <div class="card">
+                        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                            训练配置
+                            <button class="btn btn-primary btn-sm" id="btnTrain" onclick="runTrain()">开始训练</button>
+                        </div>
+                        <div class="grid-2" style="font-size:13px;color:var(--text-secondary);">
+                            <div><strong>测试集比例:</strong>
+                                <select id="testSize" class="param-select" style="width:auto;display:inline-block;">
+                                    <option value="0.2">20%</option><option value="0.3">30%</option>
+                                </select></div>
+                            <div><strong>标准化:</strong>
+                                <select id="normalize" class="param-select" style="width:auto;display:inline-block;">
+                                    <option value="standard">StandardScaler</option><option value="minmax">MinMax</option>
+                                </select></div>
+                            <div><strong>交叉验证:</strong>
+                                <select id="useCV" class="param-select" style="width:auto;display:inline-block;">
+                                    <option value="false">否</option><option value="true">5-Fold CV</option>
+                                </select></div>
+                        </div>
+                    </div>
+
+                    <div class="card" id="resultCard">
+                        <div class="card-header">评估结果</div>
+                        <div class="empty-msg" id="resultEmpty">选择数据集和算法后点击"开始训练"</div>
+                        <div id="resultContent" style="display:none;">
+                            <div class="metric-row" id="metricRow"></div>
+                            <div id="confusionImg" style="margin-top:16px;"></div>
+                            <div id="cvResults" style="margin-top:12px;font-size:13px;color:var(--text-secondary);"></div>
+                        </div>
+                        <div id="resultLoading" style="display:none;text-align:center;padding:30px;">
+                            <span class="loading-spin"></span> 训练中...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Compare -->
+        <div class="tab-panel" id="tab-compare">
+            <div class="card">
+                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                    多算法对比
+                    <button class="btn btn-primary btn-sm" id="btnCompare" onclick="runComparison()">运行对比</button>
+                </div>
+                <div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">
+                    数据集:
+                    <select id="cmpDataset" class="param-select" style="width:auto;display:inline-block;"></select>
+                </div>
+                <div id="cmpAlgoList" style="margin-bottom:14px;"></div>
+                <div id="cmpResults"></div>
+                <div id="cmpLoading" style="display:none;text-align:center;padding:20px;">
+                    <span class="loading-spin"></span> 对比中...
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Benchmark -->
+        <div class="tab-panel" id="tab-benchmark">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">5 数据集 × 6 算法基准测试结果</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+                        5-Fold CV × 3 重复 · StandardScaler · 准确率 (Accuracy)
+                    </div>
+                    <div id="benchmarkTable"></div>
+                </div>
+                <div>
+                    <div class="card">
+                        <div class="card-header">各数据集最优算法</div>
+                        <div id="benchmarkBest" style="font-size:13px;color:var(--text-secondary);line-height:2;"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">跨数据集对比</div>
+                        <div id="benchmarkCharts"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="benchmarkLoading" style="text-align:center;padding:30px;color:var(--text-muted);">
+                <span class="loading-spin"></span> 加载基准测试数据...
+            </div>
+        </div>
+
+        <!-- Tab 4: Upload -->
+        <div class="tab-panel" id="tab-upload">
+            <div class="grid-2">
+                <div>
+                    <!-- Upload Area -->
+                    <div class="card">
+                        <div class="card-header">数据上传</div>
+                        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                            <div class="upload-icon">&#128194;</div>
+                            <div class="upload-text">拖拽文件到此处，或点击选择</div>
+                            <div class="upload-hint">支持 CSV / TSV / Excel (.xlsx)，最大 100MB</div>
+                            <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.xls"
+                                   style="display:none" onchange="handleFileSelect(event)">
+                        </div>
+                        <div id="uploadProgress" style="display:none;text-align:center;padding:16px;">
+                            <span class="loading-spin"></span> 正在解析文件...
+                        </div>
+                        <div id="uploadResult" style="display:none;margin-top:12px;"></div>
+                    </div>
+
+                    <!-- 预处理 -->
+                    <div class="card" id="preprocessCard" style="display:none;">
+                        <div class="card-header">数据预处理</div>
+                        <div class="grid-2" style="font-size:13px;">
+                            <div>
+                                <label class="param-label">缺失值处理</label>
+                                <select id="upHandleMissing" class="param-select">
+                                    <option value="none">不处理</option>
+                                    <option value="mean">均值填充</option>
+                                    <option value="median">中位数填充</option>
+                                    <option value="drop">删除含缺失行</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="param-label">标准化</label>
+                                <select id="upNormalize" class="param-select">
+                                    <option value="none">不标准化</option>
+                                    <option value="standard">StandardScaler</option>
+                                    <option value="minmax">MinMaxScaler</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="runPreprocess()"
+                                style="margin-top:12px;">执行预处理</button>
+                        <span id="preprocessMsg" style="font-size:12px;color:var(--accent);margin-left:10px;"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <!-- 数据概览 -->
+                    <div class="card" id="dataOverviewCard" style="display:none;">
+                        <div class="card-header">数据概览</div>
+                        <div id="dataOverview"></div>
+                    </div>
+
+                    <!-- 统计表格 -->
+                    <div class="card" id="statsCard" style="display:none;">
+                        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                            统计摘要
+                            <button class="btn btn-secondary btn-sm" onclick="loadFullAnalysis()">详细分析</button>
+                        </div>
+                        <div style="max-height:300px;overflow-y:auto;">
+                            <table class="stat-table" id="statsTable"></table>
+                        </div>
+                        <div id="fullAnalysis" style="margin-top:10px;font-size:12px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 可视化画廊 -->
+            <div class="card" id="chartGalleryCard" style="display:none;">
+                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                    可视化图表
+                    <div>
+                        <button class="btn btn-secondary btn-sm" onclick="generateAllCharts()">生成全部图表</button>
+                        <button class="btn btn-primary btn-sm" onclick="downloadReport()" style="margin-left:8px;">
+                            &#128196; 导出 HTML 报告
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-type-pills" id="chartTypePills"></div>
+                <div class="chart-display" id="chartDisplay">
+                    <div class="empty-msg">点击上方图表类型查看可视化结果</div>
+                </div>
+                <div id="chartLoading" style="display:none;text-align:center;padding:20px;">
+                    <span class="loading-spin"></span> 渲染中...
+                </div>
+            </div>
+
+            <!-- 算法预测 -->
+            <div class="card" id="uploadPredictCard" style="display:none;">
+                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                    算法预测（基于上传数据）
+                    <button class="btn btn-primary btn-sm" id="btnUploadPredict" onclick="runUploadPredict()">
+                        开始预测
+                    </button>
+                </div>
+                <div class="grid-3" style="margin-bottom:12px;">
+                    <div>
+                        <label class="param-label">算法</label>
+                        <select id="upPredictAlgo" class="param-select" onchange="renderUploadAlgoParams()"></select>
+                    </div>
+                    <div id="upPredictParams"></div>
+                </div>
+                <div id="uploadPredictResult"></div>
+                <div id="uploadPredictLoading" style="display:none;text-align:center;padding:20px;">
+                    <span class="loading-spin"></span> 训练中...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">数据挖掘与机器学习期末大作业 | 纯NumPy手工实现 | 潘祥瑜 20234001088 | 2026</footer>
+
+    <script>
+        // ======== State ========
+        const API = '';
+        let selectedDataset = 'iris';
+        let selectedAlgo = 'knn';
+        let selectedAlgosForCompare = new Set(['knn','naive_bayes']);
+        let algoParamsCache = {};
+        let compareColors = ['#0d9488','#d97706','#7c3aed','#059669','#dc2626','#2563eb'];
+
+        // ======== Init ========
+        async function init() {
+            await loadDatasets();
+            await loadAlgorithms();
+            await loadBenchmark();
+        }
+
+        // ======== Tabs ========
+        function switchTab(name) {
+            const tabNames = {train:'单算法训练', compare:'多算法对比', benchmark:'基准结果', upload:'数据上传'};
+            document.querySelectorAll('.tab-item').forEach(t => {
+                t.classList.toggle('active', t.textContent.trim() === tabNames[name]);
+            });
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('tab-'+name).classList.add('active');
+            if (name === 'upload') initUploadTab();
+        }
+
+        // ======== Datasets ========
+        async function loadDatasets() {
+            try {
+                const res = await fetch(API+'/api/datasets');
+                const data = await res.json();
+                const listEl = document.getElementById('datasetList');
+                const cmpSel = document.getElementById('cmpDataset');
+                listEl.innerHTML = ''; cmpSel.innerHTML = '';
+                for (const [key, info] of Object.entries(data)) {
+                    const pill = document.createElement('span');
+                    pill.className = 'ds-pill' + (key === selectedDataset ? ' selected' : '');
+                    pill.textContent = info.name;
+                    pill.onclick = () => { selectDataset(key); };
+                    listEl.appendChild(pill);
+                    const opt = document.createElement('option');
+                    opt.value = key; opt.textContent = info.name;
+                    cmpSel.appendChild(opt);
+                }
+                await loadDatasetStats(selectedDataset);
+            } catch(e) { console.error(e); }
+        }
+
+        function selectDataset(key) {
+            selectedDataset = key;
+            document.querySelectorAll('#datasetList .ds-pill').forEach(p => {
+                p.classList.toggle('selected', p.textContent === document.querySelector(`option[value="${key}"]`)?.textContent || false);
+            });
+            loadDatasetStats(key);
+        }
+
+        async function loadDatasetStats(key) {
+            try {
+                const res = await fetch(API+'/api/datasets/'+key+'/load');
+                const data = await res.json();
+                if (data.error) { document.getElementById('datasetStats').innerHTML = '<span class="error-msg">'+data.error+'</span>'; return; }
+                let html = `<strong>${data.name}</strong>: ${data.n_samples} 样本, ${data.n_features} 特征, ${data.n_classes} 类别`;
+                html += `<br>类别分布: `;
+                for (const [c, cnt] of Object.entries(data.class_counts)) {
+                    html += `<span style="margin-right:8px;">类别${c}: ${cnt}</span>`;
+                }
+                if (data.missing > 0) html += `<br><span style="color:var(--warning);">缺失值: ${data.missing}</span>`;
+                html += '<table class="stat-table"><tr><th>特征</th><th>均值</th><th>标准差</th><th>最小值</th><th>最大值</th></tr>';
+                for (const s of data.feature_stats) {
+                    html += `<tr><td>${s.name}</td><td>${s.mean}</td><td>${s.std}</td><td>${s.min}</td><td>${s.max}</td></tr>`;
+                }
+                html += '</table>';
+                document.getElementById('datasetStats').innerHTML = html;
+            } catch(e) { console.error(e); }
+        }
+
+        // ======== Algorithms ========
+        async function loadAlgorithms() {
+            try {
+                const res = await fetch(API+'/api/algorithms');
+                const data = await res.json();
+                algoParamsCache = data;
+
+                // Train tab
+                const gridEl = document.getElementById('algoGrid');
+                gridEl.innerHTML = '';
+                let first = true;
+                for (const [key, info] of Object.entries(data)) {
+                    const tag = document.createElement('span');
+                    tag.className = 'algo-tag' + (first ? ' selected' : '');
+                    tag.dataset.algo = key;
+                    tag.textContent = info.name;
+                    tag.onclick = () => { selectAlgo(key); };
+                    gridEl.appendChild(tag);
+                    if (first) { selectedAlgo = key; first = false; }
+                }
+                renderAlgoParams(selectedAlgo);
+
+                // Compare tab
+                const cmpList = document.getElementById('cmpAlgoList');
+                cmpList.innerHTML = '<div class="algo-grid">';
+                for (const [key, info] of Object.entries(data)) {
+                    const checked = selectedAlgosForCompare.has(key) ? ' selected' : '';
+                    cmpList.innerHTML += `<span class="algo-tag${checked}" data-cmp="${key}" onclick="toggleCmpAlgo('${key}',this)">${info.name}</span>`;
+                }
+                cmpList.innerHTML += '</div>';
+            } catch(e) { console.error(e); }
+        }
+
+        function selectAlgo(key) {
+            selectedAlgo = key;
+            document.querySelectorAll('#algoGrid .algo-tag').forEach(t => t.classList.toggle('selected', t.dataset.algo === key));
+            renderAlgoParams(key);
+        }
+
+        function renderAlgoParams(key) {
+            const info = algoParamsCache[key];
+            if (!info) return;
+            let html = '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">' + info.name + ' 参数</div>';
+            for (const [pname, pcfg] of Object.entries(info.params)) {
+                html += '<div class="param-group"><label class="param-label">' + pcfg.label + '</label>';
+                if (pcfg.type === 'select') {
+                    html += '<select class="param-select" id="param_'+pname+'">';
+                    for (const opt of pcfg.options) {
+                        html += '<option value="'+opt+'"'+(opt===String(pcfg.default)?' selected':'')+'>'+opt+'</option>';
+                    }
+                    html += '</select>';
+                } else if (pcfg.type === 'int' || pcfg.type === 'float') {
+                    html += '<input class="param-input" type="number" id="param_'+pname+'" value="'+pcfg.default+'" min="'+(pcfg.min||'')+'" max="'+(pcfg.max||'')+'" step="'+(pcfg.type==='float'?'any':'1')+'">';
+                } else {
+                    html += '<input class="param-input" type="text" id="param_'+pname+'" value="'+pcfg.default+'">';
+                }
+                html += '</div>';
+            }
+            document.getElementById('algoParams').innerHTML = html;
+        }
+
+        function getAlgoParams(key) {
+            const info = algoParamsCache[key];
+            if (!info) return {};
+            const params = {};
+            for (const [pname, pcfg] of Object.entries(info.params)) {
+                const el = document.getElementById('param_'+pname);
+                if (!el) continue;
+                if (pcfg.type === 'int') params[pname] = parseInt(el.value);
+                else if (pcfg.type === 'float') params[pname] = parseFloat(el.value);
+                else params[pname] = el.value;
+            }
+            return params;
+        }
+
+        // ======== Train ========
+        async function runTrain() {
+            const btn = document.getElementById('btnTrain');
+            btn.disabled = true;
+            document.getElementById('resultEmpty').style.display = 'none';
+            document.getElementById('resultContent').style.display = 'none';
+            document.getElementById('resultLoading').style.display = '';
+
+            const params = getAlgoParams(selectedAlgo);
+            const body = {
+                dataset: selectedDataset,
+                algorithm: selectedAlgo,
+                params: params,
+                test_size: parseFloat(document.getElementById('testSize').value),
+                normalize: document.getElementById('normalize').value,
+                cross_validation: document.getElementById('useCV').value === 'true',
+            };
+
+            try {
+                const res = await fetch(API+'/api/train', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body),
+                });
+                const data = await res.json();
+                document.getElementById('resultLoading').style.display = 'none';
+
+                if (data.error) {
+                    document.getElementById('resultEmpty').style.display = '';
+                    document.getElementById('resultEmpty').innerHTML = '<span class="error-msg">'+data.error+'</span>';
+                } else {
+                    renderResult(data);
+                }
+            } catch(e) {
+                document.getElementById('resultLoading').style.display = 'none';
+                document.getElementById('resultEmpty').style.display = '';
+                document.getElementById('resultEmpty').innerHTML = '<span class="error-msg">网络错误: '+e.message+'</span>';
+            }
+            btn.disabled = false;
+        }
+
+        function renderResult(data) {
+            document.getElementById('resultContent').style.display = '';
+            let html = '';
+            const metrics = [
+                ['准确率', data.accuracy],
+                ['精确率', data.precision],
+                ['召回率', data.recall],
+                ['F1', data.f1],
+            ];
+            for (const [label, val] of metrics) {
+                if (val !== undefined && val !== null) {
+                    html += `<div class="metric-card"><div class="metric-value">${(val*100).toFixed(1)}%</div><div class="metric-label">${label}</div></div>`;
+                }
+            }
+            if (data.train_time) {
+                html += `<div class="metric-card"><div class="metric-value">${data.train_time.toFixed(3)}s</div><div class="metric-label">训练时间</div></div>`;
+            }
+            document.getElementById('metricRow').innerHTML = html;
+
+            // ── 图表切换器 ──
+            const chartTabs = [];
+            if (data.confusion_matrix_b64) {
+                chartTabs.push(['cm', '混淆矩阵', data.confusion_matrix_b64]);
+            }
+            if (data.per_class_b64) {
+                chartTabs.push(['per_class', '每类指标', data.per_class_b64]);
+            }
+            if (data.pca_pred_b64) {
+                chartTabs.push(['pca', 'PCA分布', data.pca_pred_b64]);
+            }
+            if (data.pred_distribution_b64) {
+                chartTabs.push(['pie', '类别分布', data.pred_distribution_b64]);
+            }
+
+            if (chartTabs.length === 0) {
+                document.getElementById('confusionImg').innerHTML = '';
+            } else if (chartTabs.length === 1) {
+                document.getElementById('confusionImg').innerHTML =
+                    '<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;text-align:right;">🔍 点击图表放大 · 滚轮缩放</div>'
+                    + '<img class="result-img" src="data:image/png;base64,'+chartTabs[0][2]+'" alt="'+chartTabs[0][1]+'">';
+            } else {
+                // 多个图表 → 切换器
+                let switcherHtml = '<div class="chart-type-pills" style="margin-bottom:10px;">';
+                for (let i = 0; i < chartTabs.length; i++) {
+                    switcherHtml += '<span class="ct-pill'+(i===0?' active':'')+'" onclick="switchResultChart(\''+chartTabs[i][0]+'\',this)">'+chartTabs[i][1]+'</span>';
+                }
+                switcherHtml += '</div>';
+                switcherHtml += '<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;text-align:right;">🔍 点击图表放大 · 滚轮缩放</div>';
+                for (let i = 0; i < chartTabs.length; i++) {
+                    switcherHtml += '<div class="result-chart-panel" id="rc-'+chartTabs[i][0]+'" style="'+(i===0?'':'display:none;')+'">'
+                        + '<img class="result-img" src="data:image/png;base64,'+chartTabs[i][2]+'" alt="'+chartTabs[i][1]+'">'
+                        + '</div>';
+                }
+                document.getElementById('confusionImg').innerHTML = switcherHtml;
+            }
+
+            if (data.cv_accuracy !== undefined) {
+                document.getElementById('cvResults').innerHTML =
+                    '<strong>5-Fold CV:</strong> acc='+(data.cv_accuracy*100).toFixed(2)+'% ± '+(data.cv_accuracy_std*100).toFixed(2)+'%, f1='+(data.cv_f1*100).toFixed(2)+'%';
+            } else {
+                document.getElementById('cvResults').innerHTML = '';
+            }
+        }
+
+        function switchResultChart(chartId, el) {
+            document.querySelectorAll('#confusionImg .ct-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            document.querySelectorAll('.result-chart-panel').forEach(p => p.style.display = 'none');
+            document.getElementById('rc-'+chartId).style.display = '';
+        }
+
+        function switchUploadChart(chartId, el) {
+            const parent = el.parentElement;
+            parent.querySelectorAll('.ct-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            document.querySelectorAll('.up-chart-panel').forEach(p => p.style.display = 'none');
+            document.getElementById('upc-'+chartId).style.display = '';
+        }
+
+        // ======== Compare ========
+        function toggleCmpAlgo(key, el) {
+            if (selectedAlgosForCompare.has(key)) {
+                selectedAlgosForCompare.delete(key);
+                el.classList.remove('selected');
+            } else {
+                selectedAlgosForCompare.add(key);
+                el.classList.add('selected');
+            }
+        }
+
+        async function runComparison() {
+            if (selectedAlgosForCompare.size < 2) { alert('请至少选择2个算法'); return; }
+            const btn = document.getElementById('btnCompare');
+            btn.disabled = true;
+            document.getElementById('cmpResults').innerHTML = '';
+            document.getElementById('cmpLoading').style.display = '';
+
+            const ds = document.getElementById('cmpDataset').value;
+            const algos = Array.from(selectedAlgosForCompare);
+            const paramsList = {};
+            for (const a of algos) paramsList[a] = getAlgoParams(a);
+
+            try {
+                const res = await fetch(API+'/api/comparison', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({dataset: ds, algorithms: algos, params_list: paramsList}),
+                });
+                const data = await res.json();
+                document.getElementById('cmpLoading').style.display = 'none';
+                renderComparison(data);
+            } catch(e) {
+                document.getElementById('cmpLoading').style.display = 'none';
+                document.getElementById('cmpResults').innerHTML = '<span class="error-msg">错误: '+e.message+'</span>';
+            }
+            btn.disabled = false;
+        }
+
+        function renderComparison(data) {
+            const results = data.results.filter(r => !r.error);
+            if (results.length === 0) { document.getElementById('cmpResults').innerHTML = '<span class="error-msg">没有有效结果</span>'; return; }
+            const maxAcc = Math.max(...results.map(r => r.accuracy || 0), 0.01);
+            let html = '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">准确率对比</div>';
+            for (let i = 0; i < results.length; i++) {
+                const r = results[i];
+                const pct = (r.accuracy / maxAcc) * 100;
+                html += `<div class="compare-row">
+                    <span class="compare-label">${algoParamsCache[r.algorithm]?.name || r.algorithm}</span>
+                    <div class="compare-bar" style="width:${pct}%;background:${compareColors[i%compareColors.length]};">
+                        ${(r.accuracy*100).toFixed(2)}%
+                    </div>
+                </div>`;
+            }
+            html += '<table class="stat-table" style="margin-top:16px;"><tr><th>算法</th><th>准确率</th><th>精确率</th><th>召回率</th><th>F1</th><th>时间(s)</th></tr>';
+            for (const r of results) {
+                html += `<tr>
+                    <td>${algoParamsCache[r.algorithm]?.name || r.algorithm}</td>
+                    <td>${(r.accuracy*100).toFixed(2)}%</td>
+                    <td>${((r.precision||0)*100).toFixed(2)}%</td>
+                    <td>${((r.recall||0)*100).toFixed(2)}%</td>
+                    <td>${((r.f1||0)*100).toFixed(2)}%</td>
+                    <td>${r.train_time?.toFixed(3)||'-'}</td>
+                </tr>`;
+            }
+            html += '</table>';
+            document.getElementById('cmpResults').innerHTML = html;
+        }
+
+        // ======== Benchmark ========
+        async function loadBenchmark() {
+            const loadingEl = document.getElementById('benchmarkLoading');
+            try {
+                const res = await fetch(API+'/api/benchmark');
+                if (!res.ok) {
+                    loadingEl.innerHTML = '<span class="empty-msg">未找到基准测试文件<br>请先运行: python src/benchmark.py</span>';
+                    return;
+                }
+                const bData = await res.json();
+                loadingEl.style.display = 'none';
+
+                const datasets = ['iris','wine','breast_cancer','diabetes','digits'];
+                const algos = bData.algorithms || ['KNN','Naive Bayes','C4.5','SVM','K-Means','MLP'];
+                const results = bData.results || {};
+                const meta = bData.datasets_meta || {};
+
+                // 主表格
+                let tableHtml = '<table class="stat-table"><tr><th>数据集</th>';
+                for (const a of algos) {
+                    const aShort = a === 'Naive Bayes' ? 'NB' :
+                                   a === 'K-Means' ? 'K-Means(Sil)' :
+                                   a === 'MLP' ? 'MLP(Adam)' :
+                                   a === 'KNN' ? 'KNN(Gauss)' :
+                                   a === 'C4.5' ? 'C4.5' :
+                                   a === 'SVM' ? 'SVM(rbf)' : a;
+                    tableHtml += '<th>'+aShort+'</th>';
+                }
+                tableHtml += '</tr>';
+
+                for (const ds of datasets) {
+                    const dsData = results[ds];
+                    if (!dsData) continue;
+                    const dsName = meta[ds]?.name || ds;
+                    tableHtml += '<tr><td><strong>'+dsName+'</strong></td>';
+
+                    let bestAcc = 0, bestAlgo = '';
+                    for (const algo of algos) {
+                        const r = dsData[algo];
+                        if (!r) { tableHtml += '<td>-</td>'; continue; }
+                        const acc = r.accuracy || 0;
+                        const isKMeans = algo === 'K-Means';
+                        const val = isKMeans ? r.accuracy.toFixed(3) : (acc*100).toFixed(1)+'%';
+                        const style = (!isKMeans && acc > bestAcc) ? 
+                            'font-weight:700;color:var(--accent);' : '';
+                        if (!isKMeans && acc > bestAcc) { bestAcc = acc; bestAlgo = algo; }
+                        tableHtml += '<td style="'+style+'">'+val+'</td>';
+                    }
+                    tableHtml += '</tr>';
+                }
+                tableHtml += '</table>';
+                document.getElementById('benchmarkTable').innerHTML = tableHtml;
+
+                // 最优算法
+                const best = bData.best_per_dataset || {};
+                let bestHtml = '';
+                for (const [ds, info] of Object.entries(best)) {
+                    bestHtml += '<div style="margin-bottom:6px;">'
+                        + '<strong>'+info.dataset_name+'</strong>: '
+                        + '<span style="color:var(--accent);">'+info.algorithm+'</span>'
+                        + ' ('+info.accuracy+'%)</div>';
+                }
+                document.getElementById('benchmarkBest').innerHTML = bestHtml || '无数据';
+
+                // 对比图表
+                let chartsHtml = '';
+                if (bData.has_charts) {
+                    const chartFiles = ['cross_dataset_accuracy.png','cross_dataset_train_time_s.png'];
+                    const chartLabels = ['准确率对比','训练时间对比'];
+                    for (let i = 0; i < chartFiles.length; i++) {
+                        chartsHtml += '<div style="margin-bottom:12px;">'
+                            + '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">'+chartLabels[i]+'</div>'
+                            + '<img class="result-img" src="output/'+chartFiles[i]+'" alt="'+chartLabels[i]+'"'
+                            + ' onerror="this.parentElement.style.display=\'none\'">'
+                            + '</div>';
+                    }
+                }
+                document.getElementById('benchmarkCharts').innerHTML = chartsHtml ||
+                    '<div class="empty-msg">图表待生成</div>';
+
+            } catch(e) {
+                loadingEl.innerHTML = '<span class="empty-msg">加载失败: '+e.message+'<br>请确保 Flask 服务已启动</span>';
+            }
+        }
+
+        // ======== Start ========
+        init();
+
+        // ======== Upload Tab ========
+        let currentUploadId = null;
+        let uploadInitialized = false;
+
+        function initUploadTab() {
+            if (uploadInitialized) return;
+            uploadInitialized = true;
+
+            // 拖拽上传
+            const zone = document.getElementById('uploadZone');
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) uploadFile(files[0]);
+            });
+
+            // 图表类型按钮
+            const chartTypes = [
+                ['histogram','直方图'], ['boxplot','箱线图'], ['violin','小提琴图'],
+                ['swarm','蜂群图'], ['heatmap','热力图'], ['scatter','散点矩阵'],
+                ['pca2d','PCA 2D'], ['pca3d','PCA 3D'], ['pca_var','PCA方差'],
+                ['parallel','平行坐标'], ['radar','雷达图'], ['dendrogram','层次聚类'],
+                ['ecdf','ECDF'], ['pie','类别分布'], ['pair_density','密度对图']
+            ];
+            document.getElementById('chartTypePills').innerHTML = chartTypes.map(([k,v]) =>
+                `<span class="ct-pill" onclick="loadChart('${k}',this)">${v}</span>`
+            ).join('');
+
+            // 初始化预测算法选择器
+            loadUploadAlgoSelector();
+        }
+
+        async function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) uploadFile(file);
+        }
+
+        async function uploadFile(file) {
+            document.getElementById('uploadProgress').style.display = '';
+            document.getElementById('uploadResult').style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch(API+'/api/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                document.getElementById('uploadProgress').style.display = 'none';
+
+                if (data.error) {
+                    document.getElementById('uploadResult').style.display = '';
+                    document.getElementById('uploadResult').innerHTML =
+                        '<span class="error-msg">'+data.error+'</span>';
+                    return;
+                }
+
+                currentUploadId = data.upload_id;
+                document.getElementById('uploadResult').style.display = '';
+                document.getElementById('uploadResult').innerHTML =
+                    '<div style="color:var(--accent);font-weight:600;margin-bottom:6px;">&#10003; '
+                    + file.name + ' 上传成功</div>';
+
+                // 展示数据概览
+                showDataOverview(data);
+                showStatsTable(data.feature_stats);
+                document.getElementById('preprocessCard').style.display = '';
+                document.getElementById('dataOverviewCard').style.display = '';
+                document.getElementById('statsCard').style.display = '';
+                document.getElementById('chartGalleryCard').style.display = '';
+                document.getElementById('uploadPredictCard').style.display = '';
+                document.getElementById('preprocessMsg').textContent = '';
+                document.getElementById('uploadPredictResult').innerHTML = '';
+
+            } catch(e) {
+                document.getElementById('uploadProgress').style.display = 'none';
+                document.getElementById('uploadResult').style.display = '';
+                document.getElementById('uploadResult').innerHTML =
+                    '<span class="error-msg">上传失败: '+e.message+'</span>';
+            }
+        }
+
+        function showDataOverview(data) {
+            let html = '<div class="metric-row">';
+            html += '<div class="metric-card"><div class="metric-value">'+data.n_samples+'</div><div class="metric-label">样本数</div></div>';
+            html += '<div class="metric-card"><div class="metric-value">'+data.n_features+'</div><div class="metric-label">特征数</div></div>';
+            html += '<div class="metric-card"><div class="metric-value">'+data.n_classes+'</div><div class="metric-label">类别数</div></div>';
+            if (data.n_missing > 0) {
+                html += '<div class="metric-card"><div class="metric-value" style="color:var(--warning);">'+data.n_missing+'</div><div class="metric-label">缺失值</div></div>';
+            }
+            html += '</div>';
+            if (data.class_distribution) {
+                html += '<div style="font-size:12px;color:var(--text-secondary);margin-top:8px;">类别分布: ';
+                for (const [c, cnt] of Object.entries(data.class_distribution)) {
+                    html += '<span style="margin-right:10px;">Class '+c+': <strong>'+cnt+'</strong></span>';
+                }
+                html += '</div>';
+            }
+            document.getElementById('dataOverview').innerHTML = html;
+        }
+
+        function showStatsTable(stats) {
+            if (!stats || stats.length === 0) return;
+            let html = '<tr><th>特征</th><th>均值</th><th>标准差</th><th>最小值</th><th>中位数</th><th>最大值</th><th>缺失</th></tr>';
+            for (const s of stats) {
+                html += `<tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.mean}</td><td>${s.std}</td><td>${s.min}</td>
+                    <td>${s.median||'-'}</td><td>${s.max}</td>
+                    <td style="color:${s.missing>0?'var(--warning)':''};">${s.missing||0}</td>
+                </tr>`;
+            }
+            document.getElementById('statsTable').innerHTML = html;
+        }
+
+        async function loadFullAnalysis() {
+            if (!currentUploadId) return;
+            try {
+                const res = await fetch(API+'/api/upload/'+currentUploadId+'/analyze');
+                const data = await res.json();
+                if (data.feature_stats) {
+                    // 更新表格（含偏度/峰度）
+                    let html = '<tr><th>特征</th><th>均值</th><th>标准差</th><th>偏度</th><th>峰度</th><th>缺失</th></tr>';
+                    for (const s of data.feature_stats) {
+                        html += `<tr>
+                            <td><strong>${s.name}</strong></td>
+                            <td>${s.mean}</td><td>${s.std}</td>
+                            <td>${s.skewness}</td><td>${s.kurtosis}</td>
+                            <td>${s.missing||0}</td>
+                        </tr>`;
+                    }
+                    document.getElementById('statsTable').innerHTML = html;
+                }
+                if (data.top_correlations && data.top_correlations.length > 0) {
+                    let corrHtml = '<strong>显著相关性 (|r|>0.3):</strong><br>';
+                    for (const c of data.top_correlations.slice(0, 5)) {
+                        const cls = c.correlation > 0.7 ? 'color:var(--accent);' :
+                                    (c.correlation > 0.5 ? 'color:var(--warning);' : '');
+                        corrHtml += `<span style="${cls}font-size:11px;">${c.feat1} ↔ ${c.feat2}: r=${c.correlation}</span><br>`;
+                    }
+                    document.getElementById('fullAnalysis').innerHTML = corrHtml;
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function runPreprocess() {
+            if (!currentUploadId) return;
+            const body = {
+                handle_missing: document.getElementById('upHandleMissing').value,
+                normalize: document.getElementById('upNormalize').value,
+                test_size: 0.2,
+            };
+            try {
+                const res = await fetch(API+'/api/upload/'+currentUploadId+'/preprocess', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body),
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    document.getElementById('preprocessMsg').textContent =
+                        '✓ 完成 (样本:'+data.n_samples_after+', 缺失:'+data.n_missing_after+')';
+                    if (data.split) {
+                        document.getElementById('preprocessMsg').textContent +=
+                            ', 训练集:'+data.split.train_samples+' 测试集:'+data.split.test_samples;
+                    }
+                }
+            } catch(e) {
+                document.getElementById('preprocessMsg').textContent = '✗ '+e.message;
+            }
+        }
+
+        async function loadChart(chartType, pillEl) {
+            if (!currentUploadId) return;
+            // 高亮当前选中
+            document.querySelectorAll('.ct-pill').forEach(p => p.classList.remove('active'));
+            if (pillEl) pillEl.classList.add('active');
+
+            document.getElementById('chartDisplay').innerHTML = '';
+            document.getElementById('chartLoading').style.display = '';
+
+            try {
+                const res = await fetch(API+'/api/upload/'+currentUploadId+'/chart/'+chartType);
+                const data = await res.json();
+                document.getElementById('chartLoading').style.display = 'none';
+
+                if (data.error) {
+                    document.getElementById('chartDisplay').innerHTML =
+                        '<span class="error-msg">'+data.error+'</span>';
+                } else {
+                    const chartNames = {
+                        histogram:'特征分布直方图', boxplot:'箱线图', violin:'小提琴图',
+                        swarm:'蜂群图', heatmap:'相关性热力图', scatter:'散点图矩阵',
+                        pca2d:'PCA 2D降维', pca3d:'PCA 3D降维', pca_var:'PCA方差解释',
+                        parallel:'平行坐标图', radar:'雷达图', dendrogram:'层次聚类树',
+                        ecdf:'ECDF累积分布', pie:'类别分布', pair_density:'配对密度图'
+                    };
+                    document.getElementById('chartDisplay').innerHTML =
+                        '<div class="chart-name">'+ (chartNames[chartType]||chartType) +'</div>'
+                        + '<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;text-align:right;">🔍 点击放大 · 滚轮缩放</div>'
+                        + '<img class="result-img" src="data:image/png;base64,'+data.image_b64+'" alt="'+chartType+'">';
+                }
+            } catch(e) {
+                document.getElementById('chartLoading').style.display = 'none';
+                document.getElementById('chartDisplay').innerHTML =
+                    '<span class="error-msg">加载失败: '+e.message+'</span>';
+            }
+        }
+
+        async function generateAllCharts() {
+            if (!currentUploadId) return;
+            document.getElementById('chartLoading').style.display = '';
+            document.getElementById('chartDisplay').innerHTML = '';
+
+            const chartTypes = ['histogram','boxplot','violin','heatmap','pie','scatter','pca2d','pca_var','ecdf','parallel'];
+            let html = '';
+            for (const ct of chartTypes) {
+                try {
+                    const res = await fetch(API+'/api/upload/'+currentUploadId+'/chart/'+ct);
+                    const data = await res.json();
+                    if (data.image_b64) {
+                        const names = {histogram:'直方图',boxplot:'箱线图',violin:'小提琴图',heatmap:'热力图',
+                            pie:'类别分布',scatter:'散点矩阵',pca2d:'PCA 2D',pca_var:'PCA方差',ecdf:'ECDF',parallel:'平行坐标'};
+                        html += '<div style="margin-bottom:16px;"><div class="chart-name">'+ (names[ct]||ct) +'</div>'
+                            + '<img class="result-img" src="data:image/png;base64,'+data.image_b64+'"></div>';
+                    }
+                } catch(e) { console.error(ct, e); }
+            }
+            document.getElementById('chartLoading').style.display = 'none';
+            document.getElementById('chartDisplay').innerHTML = html ||
+                '<div class="empty-msg">未能生成图表</div>';
+        }
+
+        async function downloadReport() {
+            if (!currentUploadId) return;
+            try {
+                // 打开报告下载链接
+                window.open(API+'/api/upload/'+currentUploadId+'/report/download', '_blank');
+            } catch(e) {
+                alert('下载失败: '+e.message);
+            }
+        }
+
+        function loadUploadAlgoSelector() {
+            const sel = document.getElementById('upPredictAlgo');
+            if (!algoParamsCache || Object.keys(algoParamsCache).length === 0) {
+                setTimeout(loadUploadAlgoSelector, 500);
+                return;
+            }
+            sel.innerHTML = '';
+            for (const [key, info] of Object.entries(algoParamsCache)) {
+                if (key === 'kmeans') continue;  // 聚类暂不用于上传数据预测
+                sel.innerHTML += '<option value="'+key+'">'+info.name+'</option>';
+            }
+            renderUploadAlgoParams();
+        }
+
+        function renderUploadAlgoParams() {
+            const key = document.getElementById('upPredictAlgo').value;
+            const info = algoParamsCache[key];
+            if (!info) return;
+            let html = '';
+            for (const [pname, pcfg] of Object.entries(info.params)) {
+                html += '<div><label class="param-label">'+pcfg.label+'</label>';
+                if (pcfg.type === 'select') {
+                    html += '<select class="param-select" id="upp_' + pname + '">';
+                    for (const opt of pcfg.options) {
+                        html += '<option value="'+opt+'"'+(opt===String(pcfg.default)?' selected':'')+'>'+opt+'</option>';
+                    }
+                    html += '</select>';
+                } else {
+                    html += '<input class="param-input" type="number" id="upp_'+pname+'" value="'+pcfg.default+'" step="any">';
+                }
+                html += '</div>';
+            }
+            document.getElementById('upPredictParams').innerHTML = html;
+        }
+
+        function getUploadPredictParams() {
+            const key = document.getElementById('upPredictAlgo').value;
+            const info = algoParamsCache[key];
+            if (!info) return {};
+            const params = {};
+            for (const [pname, pcfg] of Object.entries(info.params)) {
+                const el = document.getElementById('upp_'+pname);
+                if (!el) continue;
+                if (pcfg.type === 'int') params[pname] = parseInt(el.value);
+                else if (pcfg.type === 'float') params[pname] = parseFloat(el.value);
+                else params[pname] = el.value;
+            }
+            return params;
+        }
+
+        async function runUploadPredict() {
+            if (!currentUploadId) return;
+            const btn = document.getElementById('btnUploadPredict');
+            btn.disabled = true;
+            document.getElementById('uploadPredictLoading').style.display = '';
+            document.getElementById('uploadPredictResult').innerHTML = '';
+
+            const algo = document.getElementById('upPredictAlgo').value;
+            const params = getUploadPredictParams();
+
+            try {
+                const res = await fetch(API+'/api/upload/'+currentUploadId+'/predict', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({algorithm: algo, params: params}),
+                });
+                const data = await res.json();
+                document.getElementById('uploadPredictLoading').style.display = 'none';
+
+                let html = '<div class="metric-row">';
+                const mets = [['准确率',data.accuracy],['精确率',data.precision],['召回率',data.recall],['F1',data.f1]];
+                for (const [l,v] of mets) {
+                    if (v !== undefined && v !== null) {
+                        html += '<div class="metric-card"><div class="metric-value">'+(v*100).toFixed(1)+'%</div><div class="metric-label">'+l+'</div></div>';
+                    }
+                }
+                html += '<div class="metric-card"><div class="metric-value">'+data.train_time.toFixed(3)+'s</div><div class="metric-label">训练时间</div></div>';
+                html += '</div>';
+
+                // ── 多图表切换 ──
+                const upCharts = [];
+                if (data.confusion_matrix_b64) upCharts.push(['cm','混淆矩阵',data.confusion_matrix_b64]);
+                if (data.per_class_b64) upCharts.push(['per_class','每类指标',data.per_class_b64]);
+                if (data.pca_pred_b64) upCharts.push(['pca','PCA分布',data.pca_pred_b64]);
+                if (data.pred_distribution_b64) upCharts.push(['pie','类别分布',data.pred_distribution_b64]);
+
+                if (upCharts.length > 1) {
+                    html += '<div class="chart-type-pills" style="margin-top:12px;">';
+                    for (let i = 0; i < upCharts.length; i++) {
+                        html += '<span class="ct-pill'+(i===0?' active':'')+'" onclick="switchUploadChart(\''+upCharts[i][0]+'\',this)">'+upCharts[i][1]+'</span>';
+                    }
+                    html += '</div>';
+                    html += '<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;text-align:right;">🔍 点击图表放大 · 滚轮缩放</div>';
+                    for (let i = 0; i < upCharts.length; i++) {
+                        html += '<div class="up-chart-panel" id="upc-'+upCharts[i][0]+'" style="'+(i===0?'':'display:none;')+'">'
+                            + '<img class="result-img" src="data:image/png;base64,'+upCharts[i][2]+'" style="margin-top:8px;">'
+                            + '</div>';
+                    }
+                } else if (upCharts.length === 1) {
+                    html += '<div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;text-align:right;">🔍 点击图表放大 · 滚轮缩放</div>';
+                    html += '<img class="result-img" src="data:image/png;base64,'+upCharts[0][2]+'" style="margin-top:12px;">';
+                }
+                document.getElementById('uploadPredictResult').innerHTML = html;
+            } catch(e) {
+                document.getElementById('uploadPredictLoading').style.display = 'none';
+                document.getElementById('uploadPredictResult').innerHTML =
+                    '<span class="error-msg">'+e.message+'</span>';
+            }
+            btn.disabled = false;
+        }
+
+        // ======== Lightbox 图片缩放 ========
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                const overlay = document.getElementById('lightbox');
+            const img = document.getElementById('lightboxImg');
+            const container = document.getElementById('lightboxContainer');
+            const zoomInfo = document.getElementById('lightboxZoomInfo');
+            const closeBtn = document.getElementById('lightboxClose');
+
+            let scale = 1, translateX = 0, translateY = 0;
+            let isDragging = false, dragStartX = 0, dragStartY = 0;
+            let posStartX = 0, posStartY = 0;
+
+            function open(src) {
+                img.src = src;
+                overlay.classList.add('active');
+                resetTransform();
+                document.body.style.overflow = 'hidden';
+            }
+
+            function close() {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+                resetTransform();
+            }
+
+            function resetTransform() {
+                scale = 1; translateX = 0; translateY = 0;
+                applyTransform();
+                updateZoomInfo();
+            }
+
+            function applyTransform() {
+                img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            }
+
+            function updateZoomInfo() {
+                const pct = Math.round(scale * 100);
+                zoomInfo.textContent = pct + '% | 滚轮缩放 · 拖拽平移';
+                zoomInfo.style.opacity = scale > 1 ? '1' : '0';
+            }
+
+            // ── 事件委托：所有 .result-img 点击打开 lightbox ──
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('.result-img');
+                if (target && target.tagName === 'IMG') {
+                    open(target.src);
+                }
+            });
+
+            // ── 关闭 ──
+            closeBtn.addEventListener('click', close);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) close();
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') close();
+            });
+
+            // ── 滚轮缩放 ──
+            container.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.15 : 0.15;
+                const oldScale = scale;
+                scale = Math.max(0.3, Math.min(5, scale + delta));
+
+                // 以鼠标位置为中心缩放
+                const rect = container.getBoundingClientRect();
+                const cx = e.clientX - rect.left - rect.width / 2;
+                const cy = e.clientY - rect.top - rect.height / 2;
+                translateX = (translateX - cx) * (scale / oldScale) + cx;
+                translateY = (translateY - cy) * (scale / oldScale) + cy;
+
+                applyTransform();
+                updateZoomInfo();
+            }, { passive: false });
+
+            // ── 拖拽平移 ──
+            container.addEventListener('mousedown', function(e) {
+                if (scale <= 1) return;
+                isDragging = true;
+                container.classList.add('dragging');
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                posStartX = translateX;
+                posStartY = translateY;
+                e.preventDefault();
+            });
+
+            window.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                translateX = posStartX + (e.clientX - dragStartX);
+                translateY = posStartY + (e.clientY - dragStartY);
+                applyTransform();
+            });
+
+            window.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    container.classList.remove('dragging');
+                }
+            });
+
+            // ── 双击恢复 ──
+            container.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+                if (scale > 1.01) {
+                    resetTransform();
+                } else {
+                    scale = 2;
+                    const rect = container.getBoundingClientRect();
+                    translateX = (rect.width / 2 - e.clientX + rect.left) * -1;
+                    translateY = (rect.height / 2 - e.clientY + rect.top) * -1;
+                }
+                applyTransform();
+                updateZoomInfo();
+                });
+            });
+        })();
+    </script>
+
+    <!-- Lightbox 图片放大 -->
+    <div class="lightbox-overlay" id="lightbox">
+        <button class="lightbox-close" id="lightboxClose">&times;</button>
+        <div class="lightbox-img-container" id="lightboxContainer">
+            <img id="lightboxImg" src="" alt="图表放大视图" />
+        </div>
+        <div class="lightbox-zoom-info" id="lightboxZoomInfo">100% | 滚轮缩放 · 拖拽平移</div>
+    </div>
+</body>
+</html>

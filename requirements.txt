@@ -1,0 +1,8 @@
+# 核心依赖
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+flask>=2.3.0
+
+# 仅用于数据集加载对比（算法全部手写，不使用sklearn）
+# scikit-learn 仅作基准对比，非必须
